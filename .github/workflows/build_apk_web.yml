@@ -1,3 +1,32 @@
+name: Construire APK NIMBA LIVRAISON
+
+'on':
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/build_apk_web.yml'
+      - 'webview_main.dart'
+      - 'webview_pubspec.yaml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Installer Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
       - name: Construire
         run: |
           flutter create --platforms=android nimba_app
@@ -9,3 +38,9 @@
           cd nimba_app
           flutter pub get
           flutter build apk --release
+
+      - name: Télécharger APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NIMBA-LIVRAISON-APK
+          path: nimba_app/build/app/outputs/flutter-apk/app-release.apk
