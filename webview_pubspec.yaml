@@ -1,1 +1,18 @@
+name: nimba_app
+description: Application Android NIMBA LIVRAISON
+publish_to: 'none'
+version: 1.0.0+1
 
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  webview_flutter: ^4.9.0
+  webview_flutter_android: ^4.0.0
+  geolocator: ^13.0.1
+  url_launcher: ^6.3.0
+
+flutter:
+  uses-material-design: true
