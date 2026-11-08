@@ -1,28 +1,29 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 const String siteUrl = 'https://nimba.xo.je/login.php';
 
-void main() => runApp(const MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'NIMBA LIVRAISON',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF1F3A5F),
-          useMaterial3: true,
-        ),
-        home: const WebPage(),
-      );
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'NIMBA LIVRAISON',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorSchemeSeed: const Color(0xFF1F3A5F),
+        useMaterial3: true,
+      ),
+      home: const WebPage(),
+    );
+  }
 }
 
 class WebPage extends StatefulWidget {
@@ -68,10 +69,14 @@ class _WebPageState extends State<WebPage> {
             final uri = Uri.tryParse(req.url);
 
             if (uri != null &&
-                (['tel', 'sms', 'mailto', 'whatsapp'].contains(uri.scheme) ||
+                (['tel', 'sms', 'mailto', 'whatsapp']
+                        .contains(uri.scheme) ||
                     uri.host == 'wa.me' ||
                     uri.host == 'api.whatsapp.com')) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
+              await launchUrl(
+                uri,
+                mode: LaunchMode.externalApplication,
+              );
               return NavigationDecision.prevent;
             }
 
@@ -79,4 +84,52 @@ class _WebPageState extends State<WebPage> {
           },
         ),
       )
-      ..load
+      ..loadRequest(Uri.parse(siteUrl));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        if (await controller.canGoBack()) {
+          controller.goBack();
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: controller),
+              if (chargement)
+                const LinearProgressIndicator(),
+              if (erreur)
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Connexion impossible'),
+                      const SizedBox(height: 12),
+                      FilledButton(
+                        onPressed: () {
+                          setState(() => erreur = false);
+                          controller.loadRequest(
+                            Uri.parse(siteUrl),
+                          );
+                        },
+                        child: const Text('Réessayer'),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
